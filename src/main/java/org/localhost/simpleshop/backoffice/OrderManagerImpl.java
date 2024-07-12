@@ -1,8 +1,9 @@
 package org.localhost.simpleshop.backoffice;
-import org.localhost.simpleshop.cart.Order;
-import org.localhost.simpleshop.product.Product;
+
+import org.localhost.simpleshop.cart.OrderImpl;
 import org.localhost.simpleshop.product.ProductImpl;
 import org.localhost.simpleshop.product.ProductServiceImpl;
+import org.springframework.data.crossstore.ChangeSetPersister;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,58 +11,92 @@ import java.util.Objects;
 
 public class OrderManagerImpl implements OrderManager {
     private final ProductServiceImpl productService;
-    List<ProductImpl> productsWithCategories = new ArrayList<>();
-    List<ProductImpl> productsWithDiscount = new ArrayList<>();
-    List<Order> completedOrders = new ArrayList<>();
-    List<Order> ordersInProgress = new ArrayList<>();
+    private final List<ProductImpl> productsWithCategories = new ArrayList<>();
+    private final List<ProductImpl> productsWithDiscount = new ArrayList<>();
+    private final List<OrderImpl> completedOrders = new ArrayList<>();
+    private final List<OrderImpl> ordersInProgress = new ArrayList<>();
 
     public OrderManagerImpl(ProductServiceImpl productService) {
         this.productService = productService;
-        this.productsWithCategories.addAll(productService.getAvailableProducts());
-        productsWithDiscount = productService.getAvailableProducts().stream()
-                .filter(product -> product.getDiscount() > 0)
-                .toList();
+        refreshProductLists();
     }
 
 
     @Override
-    public Order completeOrder(String orderId) {
-        return null;
+    public void createNewOrder(OrderImpl order) {
+        Objects.requireNonNull(order);
+        ordersInProgress.add(order);
     }
 
+    @Override
+    public OrderImpl removeOrder(String orderId) {
+        return ordersInProgress.stream()
+                .filter(order -> order.getId().equals(orderId))
+                .findFirst()
+                .map(order -> {
+                    ordersInProgress.remove(order);
+                    return order;
+                })
+                .orElseThrow(OrderNotFoundException::new);
+    }
 
+    @Override
+    public OrderImpl completeOrder(String orderId) {
+        return ordersInProgress.stream()
+                .filter(order -> order.getId().equals(orderId))
+                .findFirst()
+                .map(order -> {
+                    order.completeOrder();
+                    completedOrders.add(order);
+                    ordersInProgress.remove(order);
+                    return order;
+                })
+                .orElseThrow(OrderNotFoundException::new);
+    }
 
     @Override
     public void addProduct(ProductImpl product) {
         Objects.requireNonNull(product);
         productService.registerProduct(product);
-        productsWithCategories = productService.getAvailableProducts();
+        refreshProductLists();
     }
 
     @Override
-    public void removeProduct(String productId) {
-
+    public boolean removeProduct(String productId) {
+        Objects.requireNonNull(productId);
+        boolean result = productService.removeProduct(productId);
+        if (result) {
+            refreshProductLists();
+        }
+        return result;
     }
 
     @Override
-    public List<Product> getProductsWithByCategory(String category) {
+    public List<ProductImpl> getProductsWithCategory() {
         return List.copyOf(productsWithCategories);
     }
 
     @Override
-    public List<Product> getProductsWithDiscount() {
+    public List<ProductImpl> getProductsWithDiscount() {
         return List.copyOf(productsWithDiscount);
     }
 
-    @Override
-    public Order createOrder(Order order) {
-        Objects.requireNonNull(order);
-
-        return null;
+    List<OrderImpl> getCompletedOrders() {
+        return List.copyOf(completedOrders);
     }
 
-//    public static List<ProductImpl> getAvailableProductsList() {
-//        return List.of(this.productsWithCategories);
-//    }
+    List<OrderImpl> getOrdersInProgress() {
+        return List.copyOf(ordersInProgress);
+    }
 
+    private void refreshProductLists() {
+        productsWithCategories.clear();
+        productsWithDiscount.clear();
+
+        this.productsWithCategories.addAll(productService.getAvailableProducts());
+
+        productsWithDiscount.addAll(productService.getAvailableProducts().stream()
+                .filter(product -> product.getDiscount() > 0)
+                .toList());
+    }
 }

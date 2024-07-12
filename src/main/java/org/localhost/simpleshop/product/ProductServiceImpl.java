@@ -11,9 +11,26 @@ public class ProductServiceImpl implements ProductService {
         availableProducts.add(product);
     }
 
+    public boolean removeProduct(String productId) {
+        Objects.requireNonNull(productId);
+        return availableProducts.stream()
+                .filter(result -> result.getId().equals(productId))
+                        .findFirst()
+                .map(availableProducts::remove)
+                .orElse(false);
+    }
+
     @Override
     public List<ProductImpl> getAvailableProducts() {
         return List.copyOf(availableProducts);
+    }
+
+    @Override
+    public Optional<ProductImpl> getProductById(String productId) {
+        Objects.requireNonNull(productId);
+        return availableProducts.stream()
+                .filter(product -> product.getId().equals(productId))
+                .findFirst();
     }
 
     public ProductServiceImpl() {

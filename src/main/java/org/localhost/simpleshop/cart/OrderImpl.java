@@ -12,6 +12,9 @@ import java.util.UUID;
 @Getter
 @Setter
 public class OrderImpl implements Order {
+    public boolean isCompleted() {
+        return isCompleted;
+    }
 
     private String id;
     List<ProductImpl> products;
@@ -40,6 +43,6 @@ public class OrderImpl implements Order {
     @Override
     public void completeOrder() {
         if (isCompleted) return;
-        isCompleted = true;
+        setCompleted(true);
     }
 }
