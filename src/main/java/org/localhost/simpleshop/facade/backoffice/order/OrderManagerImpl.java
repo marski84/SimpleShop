@@ -1,23 +1,26 @@
-package org.localhost.simpleshop.backoffice;
+package org.localhost.simpleshop.facade.backoffice.order;
 
-import org.localhost.simpleshop.cart.OrderImpl;
-import org.localhost.simpleshop.product.ProductImpl;
-import org.localhost.simpleshop.product.ProductServiceImpl;
-import org.springframework.data.crossstore.ChangeSetPersister;
+import org.localhost.simpleshop.facade.backoffice.order.cart.CartItem;
+import org.localhost.simpleshop.facade.backoffice.order.cart.OrderImpl;
+import org.localhost.simpleshop.facade.backoffice.order.exceptions.OrderNotFoundException;
+import org.localhost.simpleshop.facade.backoffice.order.product.ProductImpl;
+import org.localhost.simpleshop.facade.backoffice.order.product.ProductServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class OrderManagerImpl implements OrderManager {
     private final ProductServiceImpl productService;
-    private final List<ProductImpl> productsWithCategories = new ArrayList<>();
-    private final List<ProductImpl> productsWithDiscount = new ArrayList<>();
-    private final List<OrderImpl> completedOrders = new ArrayList<>();
-    private final List<OrderImpl> ordersInProgress = new ArrayList<>();
+    private final OrderService orderService;
+    private final List<CartItem> productsWithCategories = new ArrayList<>();
+    private final List<CartItem> productsWithDiscount = new ArrayList<>();
 
-    public OrderManagerImpl(ProductServiceImpl productService) {
+
+    public OrderManagerImpl(ProductServiceImpl productService, OrderService orderService) {
         this.productService = productService;
+        this.orderService = orderService;
         refreshProductLists();
     }
 
@@ -25,16 +28,16 @@ public class OrderManagerImpl implements OrderManager {
     @Override
     public void createNewOrder(OrderImpl order) {
         Objects.requireNonNull(order);
-        ordersInProgress.add(order);
+        orderService.createOrder(order);
     }
 
     @Override
     public OrderImpl removeOrder(String orderId) {
-        return ordersInProgress.stream()
+        return orderService.getOrdersInProgress().stream()
                 .filter(order -> order.getId().equals(orderId))
                 .findFirst()
                 .map(order -> {
-                    ordersInProgress.remove(order);
+                    orderService.removeOrderInProgress(order);
                     return order;
                 })
                 .orElseThrow(OrderNotFoundException::new);
@@ -42,20 +45,20 @@ public class OrderManagerImpl implements OrderManager {
 
     @Override
     public OrderImpl completeOrder(String orderId) {
-        return ordersInProgress.stream()
+        Objects.requireNonNull(orderId);
+        return orderService.getOrdersInProgress().stream()
                 .filter(order -> order.getId().equals(orderId))
                 .findFirst()
                 .map(order -> {
                     order.completeOrder();
-                    completedOrders.add(order);
-                    ordersInProgress.remove(order);
+                    orderService.completeOrder(order);
                     return order;
                 })
                 .orElseThrow(OrderNotFoundException::new);
     }
 
     @Override
-    public void addProduct(ProductImpl product) {
+    public void registerNewProduct(CartItem product) {
         Objects.requireNonNull(product);
         productService.registerProduct(product);
         refreshProductLists();
@@ -72,21 +75,21 @@ public class OrderManagerImpl implements OrderManager {
     }
 
     @Override
-    public List<ProductImpl> getProductsWithCategory() {
-        return List.copyOf(productsWithCategories);
+    public Set<CartItem> getProductsWithCategory() {
+        return Set.copyOf(productsWithCategories);
     }
 
     @Override
-    public List<ProductImpl> getProductsWithDiscount() {
-        return List.copyOf(productsWithDiscount);
+    public Set<CartItem> getProductsWithDiscount() {
+        return Set.copyOf(productsWithDiscount);
     }
 
-    List<OrderImpl> getCompletedOrders() {
-        return List.copyOf(completedOrders);
+    public Set<OrderImpl> getCompletedOrders() {
+        return orderService.getCompletedOrders();
     }
 
-    List<OrderImpl> getOrdersInProgress() {
-        return List.copyOf(ordersInProgress);
+    public Set<OrderImpl> getOrdersInProgress() {
+        return orderService.getOrdersInProgress();
     }
 
     private void refreshProductLists() {

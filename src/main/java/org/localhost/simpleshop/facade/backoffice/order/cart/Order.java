@@ -1,4 +1,4 @@
-package org.localhost.simpleshop.cart;
+package org.localhost.simpleshop.facade.backoffice.order.cart;
 
 public interface Order {
     double calculateTotalOrderPrice();

@@ -1,4 +1,4 @@
-package org.localhost.simpleshop.product;
+package org.localhost.simpleshop.facade.backoffice.order.product;
 
 public class ProductWithCategoryDto {
     private String name;
