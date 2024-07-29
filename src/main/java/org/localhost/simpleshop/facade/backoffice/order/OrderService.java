@@ -4,6 +4,7 @@ import org.localhost.simpleshop.facade.backoffice.order.cart.CartItem;
 import org.localhost.simpleshop.facade.backoffice.order.cart.Order;
 import org.localhost.simpleshop.facade.backoffice.order.cart.OrderImpl;
 import org.localhost.simpleshop.facade.backoffice.order.exceptions.OrderAlreadyInProgressException;
+import org.localhost.simpleshop.facade.backoffice.order.exceptions.OrderNotFoundException;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductImpl;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductServiceImpl;
 import org.springframework.stereotype.Service;
@@ -24,13 +25,17 @@ public class OrderService {
         return Set.copyOf(ordersInProgress);
     }
 
+    public OrderImpl getOrder(String id) {
+        return ordersInProgress.stream()
+                .filter(order -> order.getId().equals(id))
+                .findFirst()
+                .orElseThrow(OrderNotFoundException::new);
+    }
+
     public Set<OrderImpl> getCompletedOrders() {
         return Set.copyOf(ordersInProgress);
     }
 
-//    public OrderService(ProductServiceImpl productService) {
-//        this.productService = productService;
-//    }
 
     public void createOrder(OrderImpl order) {
         if (ordersInProgress.contains(order)) {

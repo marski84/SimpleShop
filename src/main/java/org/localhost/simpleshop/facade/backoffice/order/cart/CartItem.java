@@ -42,7 +42,6 @@ public class CartItem {
     public double calculatePrice() {
         double netPrice =  price * quantity;
         double taxPrice = price + (tax * netPrice);
-        double finalPrice = taxPrice - (tax * discount);
-        return finalPrice;
+        return taxPrice - (taxPrice * discount);
     }
 }

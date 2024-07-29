@@ -11,30 +11,34 @@ import java.util.UUID;
 @Getter
 public class OrderImpl implements Order {
     private final String id;
-    private final Set<CartItem> products;
+    private final Set<CartItem> products = new HashSet<>();
     private double discount;
-    private boolean completed;
+    private boolean completed = false;
 
-    public OrderImpl(Set<CartItem> products) {
+    public OrderImpl() {
         this.id = UUID.randomUUID().toString();
-        this.completed = false;
-        this.products = new HashSet<>(Objects.requireNonNull(products, "Products cannot be null"));
     }
 
 
-    void addProduct(CartItem product) {
+    public void addProduct(CartItem product) {
         Objects.requireNonNull(product, "Product cannot be null");
         if (completed) {
             throw new OrderFinishedException("Cannot add product to completed order");
         }
-        this.products.add(product);
+            products.stream()
+                    .filter(chosenProduct -> chosenProduct.equals(product))
+                    .findFirst()
+                    .ifPresentOrElse(
+                            chosenProduct -> chosenProduct.setQuantity(chosenProduct.getQuantity() + 1),
+                            () -> products.add(product)
+                    );
     }
 
 
     @Override
     public double calculateTotalOrderPrice() {
         double total = products.stream()
-                .mapToDouble(CartItem::getPrice)
+                .mapToDouble(CartItem::calculatePrice)
                 .sum();
         return total * (1 - discount / 100);
     }

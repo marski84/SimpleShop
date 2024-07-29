@@ -5,12 +5,14 @@ import org.localhost.simpleshop.facade.backoffice.order.cart.OrderImpl;
 import org.localhost.simpleshop.facade.backoffice.order.exceptions.OrderNotFoundException;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductImpl;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductServiceImpl;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+@Component
 public class OrderManagerImpl implements OrderManager {
     private final ProductServiceImpl productService;
     private final OrderService orderService;
@@ -55,6 +57,13 @@ public class OrderManagerImpl implements OrderManager {
                     return order;
                 })
                 .orElseThrow(OrderNotFoundException::new);
+    }
+
+    public void addProductToOrder(CartItem product, String orderId) {
+        Objects.requireNonNull(orderId);
+        Objects.requireNonNull(product);
+        OrderImpl order = orderService.getOrder(orderId);
+        order.addProduct(product);
     }
 
     @Override

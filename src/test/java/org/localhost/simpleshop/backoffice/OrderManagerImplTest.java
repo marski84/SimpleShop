@@ -37,8 +37,12 @@ class OrderManagerImplTest {
     @DisplayName("it should add new Order to ordersInProgress List")
     void createNewOrder() {
 //        given
+
         int initialListSize = objectUnderTest.getOrdersInProgress().size();
-        OrderImpl testOrder = new OrderImpl(objectUnderTest.getProductsWithDiscount());
+        OrderImpl testOrder = new OrderImpl();
+        objectUnderTest.getProductsWithDiscount().forEach(
+                testOrder::addProduct
+        );
 //        when
         objectUnderTest.createNewOrder(testOrder);
 //        then
@@ -70,7 +74,8 @@ class OrderManagerImplTest {
     void removeOrder() {
 //        given
         int initialListSize = objectUnderTest.getOrdersInProgress().size();
-        OrderImpl testOrder = new OrderImpl(objectUnderTest.getProductsWithDiscount());
+        OrderImpl testOrder = new OrderImpl();
+        objectUnderTest.getProductsWithDiscount().forEach(testOrder::addProduct);
 //        when
         objectUnderTest.createNewOrder(testOrder);
         objectUnderTest.removeOrder(testOrder.getId());
@@ -82,7 +87,9 @@ class OrderManagerImplTest {
     @DisplayName("It should complete order and move it to completed orders list")
     void testCompleteOrder() {
 //        given
-        OrderImpl testOrder = new OrderImpl(objectUnderTest.getProductsWithDiscount());
+        OrderImpl testOrder = new OrderImpl();
+        objectUnderTest.getProductsWithDiscount().forEach(testOrder::addProduct);
+
 //        when
         objectUnderTest.createNewOrder(testOrder);
         int initialOrdersInProgressSize = objectUnderTest.getOrdersInProgress().size();
@@ -98,7 +105,9 @@ class OrderManagerImplTest {
     @DisplayName("complete order should throw when order was mot added")
     void completeOrderShouldThrowWhenOrderDoesNotExist() {
 //        given
-        OrderImpl testOrder = new OrderImpl(objectUnderTest.getProductsWithDiscount());
+        OrderImpl testOrder = new OrderImpl();
+        objectUnderTest.getProductsWithDiscount().forEach(testOrder::addProduct);
+
 //        when, then
         assertThrows(OrderNotFoundException.class, () -> objectUnderTest.completeOrder(testOrder.getId()));
     }
@@ -123,7 +132,7 @@ class OrderManagerImplTest {
 //        given
         CartItem productToDelete = productService.getAvailableProducts()
                 .stream()
-                .peek(product -> System.out.println(product))
+                .peek(System.out::println)
                 .toList()
                 .get(1);
         long initialProductListSize = objectUnderTest.getProductsWithCategory().size();

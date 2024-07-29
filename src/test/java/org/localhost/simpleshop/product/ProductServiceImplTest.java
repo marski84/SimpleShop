@@ -4,8 +4,6 @@ import org.junit.jupiter.api.*;
 import org.localhost.simpleshop.facade.backoffice.order.cart.CartItem;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductImpl;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductServiceImpl;
-
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
