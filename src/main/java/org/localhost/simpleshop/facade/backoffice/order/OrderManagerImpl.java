@@ -39,7 +39,7 @@ public class OrderManagerImpl implements OrderManager {
                 .filter(order -> order.getId().equals(orderId))
                 .findFirst()
                 .map(order -> {
-                    orderService.removeOrderInProgress(order);
+                    orderService.removeOrderInProgress(order.getId());
                     return order;
                 })
                 .orElseThrow(OrderNotFoundException::new);
@@ -53,7 +53,7 @@ public class OrderManagerImpl implements OrderManager {
                 .findFirst()
                 .map(order -> {
                     order.completeOrder();
-                    orderService.completeOrder(order);
+                    orderService.completeOrder(order.getId());
                     return order;
                 })
                 .orElseThrow(OrderNotFoundException::new);
@@ -64,6 +64,12 @@ public class OrderManagerImpl implements OrderManager {
         Objects.requireNonNull(product);
         OrderImpl order = orderService.getOrder(orderId);
         order.addProduct(product);
+    }
+
+    public void removeProductFromOrder(String productId, String orderId) {
+        Objects.requireNonNull(productId);
+        Objects.requireNonNull(orderId);
+        orderService.removeProductFromOrder(productId, orderId);
     }
 
     @Override

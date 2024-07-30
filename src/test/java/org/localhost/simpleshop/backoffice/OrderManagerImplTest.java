@@ -161,14 +161,15 @@ class OrderManagerImplTest {
     }
 
     @Test
-    @DisplayName("it should not remove product form available products list if product was not found")
+    @DisplayName("it should not remove product from available products list if product was not found")
     void testDoNotRemoveProductIfNoProductFound() {
 //        given
         CartItem product = new CartItem(new ProductImpl("test", "test")
         ).setPrice(111).setTax(22).setDiscount(231)
-                .build();        long initialProductListSize = objectUnderTest.getProductsWithCategory().size();
+                .build();
+        long initialProductListSize = objectUnderTest.getProductsWithCategory().size();
 
-                objectUnderTest.registerNewProduct(product);
+        objectUnderTest.registerNewProduct(product);
 //        when
         boolean testResult = objectUnderTest.removeProduct(product.getProduct().getId());
 //        then
