@@ -16,13 +16,13 @@ public class ProductServiceImpl implements ProductService {
         availableProducts.add(product);
     }
 
-    public boolean removeProduct(String productId) {
+    public void removeProduct(String productId) {
         Objects.requireNonNull(productId);
-        return availableProducts.stream()
-                .filter(result -> result.getProduct().getId().equals(productId))
-                        .findFirst()
-                .map(availableProducts::remove)
-                .orElseThrow(() ->  new ProductNotFoundException("Product not Found!"));
+        CartItem product = getProductById(productId);
+        if (!availableProducts.contains(product)) {
+            throw new ProductNotFoundException(productId);
+        }
+        availableProducts.remove(product);
     }
 
     @Override
@@ -38,16 +38,4 @@ public class ProductServiceImpl implements ProductService {
                 .findFirst()
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
     }
-
-//    public ProductServiceImpl() {
-//        for (int i = 1; i <= 40; i++) {
-//            availableProducts.add(
-//                    new CartItem(new ProductImpl("Product " + i, "Category " + (i % 5)))
-//                            .setPrice(Math.random() * 100.4)
-//                            .setTax(Math.random() * 20.3)
-//                            .setDiscount(Math.random() * 10)
-//                            .build()
-//            );)
-//        }
-//    }
 }

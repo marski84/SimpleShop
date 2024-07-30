@@ -3,7 +3,6 @@ package org.localhost.simpleshop.facade.backoffice.order;
 import org.localhost.simpleshop.facade.backoffice.order.cart.CartItem;
 import org.localhost.simpleshop.facade.backoffice.order.cart.OrderImpl;
 import org.localhost.simpleshop.facade.backoffice.order.exceptions.OrderNotFoundException;
-import org.localhost.simpleshop.facade.backoffice.order.product.ProductImpl;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductServiceImpl;
 import org.springframework.stereotype.Component;
 
@@ -15,14 +14,14 @@ import java.util.Set;
 @Component
 public class OrderManagerImpl implements OrderManager {
     private final ProductServiceImpl productService;
-    private final OrderService orderService;
+    private final OrderServiceImpl orderServiceImpl;
     private final List<CartItem> productsWithCategories = new ArrayList<>();
     private final List<CartItem> productsWithDiscount = new ArrayList<>();
 
 
-    public OrderManagerImpl(ProductServiceImpl productService, OrderService orderService) {
+    public OrderManagerImpl(ProductServiceImpl productService, OrderServiceImpl orderServiceImpl) {
         this.productService = productService;
-        this.orderService = orderService;
+        this.orderServiceImpl = orderServiceImpl;
         refreshProductLists();
     }
 
@@ -30,16 +29,16 @@ public class OrderManagerImpl implements OrderManager {
     @Override
     public void createNewOrder(OrderImpl order) {
         Objects.requireNonNull(order);
-        orderService.createOrder(order);
+        orderServiceImpl.createOrder(order);
     }
 
     @Override
     public OrderImpl removeOrder(String orderId) {
-        return orderService.getOrdersInProgress().stream()
+        return orderServiceImpl.getOrdersInProgress().stream()
                 .filter(order -> order.getId().equals(orderId))
                 .findFirst()
                 .map(order -> {
-                    orderService.removeOrderInProgress(order.getId());
+                    orderServiceImpl.removeOrderInProgress(order.getId());
                     return order;
                 })
                 .orElseThrow(OrderNotFoundException::new);
@@ -48,12 +47,11 @@ public class OrderManagerImpl implements OrderManager {
     @Override
     public OrderImpl completeOrder(String orderId) {
         Objects.requireNonNull(orderId);
-        return orderService.getOrdersInProgress().stream()
+        return orderServiceImpl.getOrdersInProgress().stream()
                 .filter(order -> order.getId().equals(orderId))
                 .findFirst()
                 .map(order -> {
-                    order.completeOrder();
-                    orderService.completeOrder(order.getId());
+                    orderServiceImpl.completeOrder(order.getId());
                     return order;
                 })
                 .orElseThrow(OrderNotFoundException::new);
@@ -62,14 +60,14 @@ public class OrderManagerImpl implements OrderManager {
     public void addProductToOrder(CartItem product, String orderId) {
         Objects.requireNonNull(orderId);
         Objects.requireNonNull(product);
-        OrderImpl order = orderService.getOrder(orderId);
+        OrderImpl order = orderServiceImpl.getOrder(orderId);
         order.addProduct(product);
     }
 
     public void removeProductFromOrder(String productId, String orderId) {
         Objects.requireNonNull(productId);
         Objects.requireNonNull(orderId);
-        orderService.removeProductFromOrder(productId, orderId);
+        orderServiceImpl.removeProductFromOrder(productId, orderId);
     }
 
     @Override
@@ -79,14 +77,12 @@ public class OrderManagerImpl implements OrderManager {
         refreshProductLists();
     }
 
-    @Override
-    public boolean removeProduct(String productId) {
+
+    public void removeProduct(String productId) {
         Objects.requireNonNull(productId);
-        boolean result = productService.removeProduct(productId);
-        if (result) {
-            refreshProductLists();
-        }
-        return result;
+
+        productService.removeProduct(productId);
+        refreshProductLists();
     }
 
     @Override
@@ -100,11 +96,11 @@ public class OrderManagerImpl implements OrderManager {
     }
 
     public Set<OrderImpl> getCompletedOrders() {
-        return orderService.getCompletedOrders();
+        return orderServiceImpl.getCompletedOrders();
     }
 
     public Set<OrderImpl> getOrdersInProgress() {
-        return orderService.getOrdersInProgress();
+        return orderServiceImpl.getOrdersInProgress();
     }
 
     private void refreshProductLists() {

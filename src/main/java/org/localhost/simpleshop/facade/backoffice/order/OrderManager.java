@@ -10,7 +10,7 @@ public interface OrderManager {
     void createNewOrder(OrderImpl order);
     OrderImpl removeOrder(String orderId);
     void registerNewProduct(CartItem product);
-    boolean removeProduct(String productId);
+    void removeProduct(String productId);
     Set<CartItem> getProductsWithCategory();
     Set<CartItem> getProductsWithDiscount();
 }

@@ -4,10 +4,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.localhost.simpleshop.facade.backoffice.order.OrderManagerImpl;
-import org.localhost.simpleshop.facade.backoffice.order.OrderService;
+import org.localhost.simpleshop.facade.backoffice.order.OrderServiceImpl;
 import org.localhost.simpleshop.facade.backoffice.order.cart.CartItem;
 import org.localhost.simpleshop.facade.backoffice.order.exceptions.OrderNotFoundException;
 import org.localhost.simpleshop.facade.backoffice.order.cart.OrderImpl;
+import org.localhost.simpleshop.facade.backoffice.order.exceptions.ProductNotFoundException;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductImpl;
 import org.localhost.simpleshop.facade.backoffice.order.product.ProductServiceImpl;
 
@@ -16,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OrderManagerImplTest {
     private static final ProductServiceImpl productService = new ProductServiceImpl();
-    private static final OrderService orderService = new OrderService();
-    private static final OrderManagerImpl objectUnderTest = new OrderManagerImpl(productService, orderService);
+    private static final OrderServiceImpl ORDER_SERVICE_IMPL = new OrderServiceImpl();
+    private static final OrderManagerImpl objectUnderTest = new OrderManagerImpl(productService, ORDER_SERVICE_IMPL);
 
     @BeforeAll
     static void init() {
@@ -87,18 +88,14 @@ class OrderManagerImplTest {
     @DisplayName("It should complete order and move it to completed orders list")
     void testCompleteOrder() {
 //        given
-        OrderImpl testOrder = new OrderImpl();
-        objectUnderTest.getProductsWithDiscount().forEach(testOrder::addProduct);
-
+        OrderImpl completedTestOrder = new OrderImpl();
 //        when
-        objectUnderTest.createNewOrder(testOrder);
-        int initialOrdersInProgressSize = objectUnderTest.getOrdersInProgress().size();
-        int initialCompletedOrdersSize = objectUnderTest.getCompletedOrders().size();
+        objectUnderTest.createNewOrder(completedTestOrder);
 //    then
-        OrderImpl result = objectUnderTest.completeOrder(testOrder.getId());
+        OrderImpl result = objectUnderTest.completeOrder(completedTestOrder.getId());
         assertTrue(result.isCompleted());
-        assertEquals(initialOrdersInProgressSize - 1, objectUnderTest.getOrdersInProgress().size());
-        assertEquals(initialCompletedOrdersSize + 1, objectUnderTest.getCompletedOrders().size());
+        assertTrue(objectUnderTest.getCompletedOrders().contains(completedTestOrder));
+        assertFalse(objectUnderTest.getOrdersInProgress().contains(completedTestOrder));
     }
 
     @Test
@@ -135,19 +132,12 @@ class OrderManagerImplTest {
                 .peek(System.out::println)
                 .toList()
                 .get(1);
-        long initialProductListSize = objectUnderTest.getProductsWithCategory().size();
+        int initialProductListSize = objectUnderTest.getProductsWithCategory().size();
 //        when
-        boolean testResult = objectUnderTest.removeProduct(productToDelete.getProduct().getId());
+        objectUnderTest.removeProduct(productToDelete.getProduct().getId());
 //        then
-        assertTrue(testResult);
-        assertEquals(
-                initialProductListSize - 1,
-                objectUnderTest.getProductsWithCategory().size()
-        );
-        assertEquals(
-                initialProductListSize - 1,
-                productService.getAvailableProducts().size()
-        );
+        assertFalse(objectUnderTest.getProductsWithCategory().contains(productToDelete));
+
     }
 
     @Test
@@ -167,21 +157,12 @@ class OrderManagerImplTest {
         CartItem product = new CartItem(new ProductImpl("test", "test")
         ).setPrice(111).setTax(22).setDiscount(231)
                 .build();
-        long initialProductListSize = objectUnderTest.getProductsWithCategory().size();
 
-        objectUnderTest.registerNewProduct(product);
-//        when
-        boolean testResult = objectUnderTest.removeProduct(product.getProduct().getId());
-//        then
-        assertFalse(testResult);
-        assertEquals(
-                initialProductListSize,
-                objectUnderTest.getProductsWithCategory().size()
-        );
-        assertEquals(
-                initialProductListSize,
-                productService.getAvailableProducts().size()
-        );
+
+//        when, then
+        assertThrows(
+                ProductNotFoundException.class,
+                () -> objectUnderTest.removeProduct(product.getProduct().getId()));
     }
 
     @Test

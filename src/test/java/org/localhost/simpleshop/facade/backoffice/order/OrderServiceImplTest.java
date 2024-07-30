@@ -12,9 +12,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class OrderServiceTest {
+class OrderServiceImplTest {
 
-    private final static OrderService objectUnderTest = new OrderService();
+    private final static OrderServiceImpl objectUnderTest = new OrderServiceImpl();
     private final static CartItem firstTestProduct = new CartItem(new ProductImpl("test", "test")
     ).setPrice(555).setTax(0.22).setDiscount(0.5)
             .build();
