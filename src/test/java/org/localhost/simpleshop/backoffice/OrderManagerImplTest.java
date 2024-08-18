@@ -24,7 +24,8 @@ class OrderManagerImplTest {
     static void init() {
         for (int i = 1; i <= 40; i++) {
             objectUnderTest.registerNewProduct(
-                    new CartItem(new ProductImpl("Product " + i, "Category " + (i % 5)))
+                    new CartItem(
+                            new ProductImpl("Product " + i, "Category " + (i % 5)))
                             .setPrice(Math.random() * 100.4)
                             .setTax(Math.random() * 20.3)
                             .setDiscount(Math.random() * 10)
@@ -182,12 +183,18 @@ class OrderManagerImplTest {
         assertTrue(noProductWithoutDiscount);
     }
 
-
     @Test
-    void getProductsWithByCategory() {
+    @DisplayName("It should return order total price")
+    void testGetTotalPrice() {
+//        given
+        CartItem testProduct = new CartItem(new ProductImpl("test", "test"))
+                .setPrice(100).setDiscount(0);
+        OrderImpl testOrder = new OrderImpl();
+        testOrder.addProduct(testProduct);
+//        when
+    double expectedOrderPrice = testProduct.getPrice();
+//then
+        assertEquals(expectedOrderPrice, testOrder.calculateTotalOrderPrice());
     }
 
-    @Test
-    void getProductsWithDiscount() {
-    }
 }

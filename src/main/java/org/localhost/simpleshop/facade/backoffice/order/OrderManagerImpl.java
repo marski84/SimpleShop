@@ -57,6 +57,10 @@ public class OrderManagerImpl implements OrderManager {
                 .orElseThrow(OrderNotFoundException::new);
     }
 
+    private OrderImpl findOrderInProgress(String orderId) {
+        return null;
+    }
+
     public void addProductToOrder(CartItem product, String orderId) {
         Objects.requireNonNull(orderId);
         Objects.requireNonNull(product);
@@ -93,6 +97,14 @@ public class OrderManagerImpl implements OrderManager {
     @Override
     public Set<CartItem> getProductsWithDiscount() {
         return Set.copyOf(productsWithDiscount);
+    }
+
+    @Override
+    public double getOrderPrice(String orderId) {
+        if (orderId == null) {
+            throw new OrderNotFoundException();
+        }
+        return orderServiceImpl.getOrderTotalPrice(orderId);
     }
 
     public Set<OrderImpl> getCompletedOrders() {

@@ -13,4 +13,5 @@ public interface OrderManager {
     void removeProduct(String productId);
     Set<CartItem> getProductsWithCategory();
     Set<CartItem> getProductsWithDiscount();
+    double getOrderPrice(String orderId);
 }

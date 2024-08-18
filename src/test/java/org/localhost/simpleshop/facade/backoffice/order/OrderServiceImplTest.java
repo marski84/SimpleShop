@@ -133,7 +133,7 @@ class OrderServiceImplTest {
 
     @Test
     @DisplayName("it should return empty list of completed orders")
-    void getCompletedOrdersShouldRetunEmptySet() {
+    void getCompletedOrdersShouldReturnEmptySet() {
 //        given
         int startingOrdersInProgressSize = objectUnderTest.getOrdersInProgress().size();
         int startingCompletedOrdersSize = objectUnderTest.getCompletedOrders().size();
@@ -204,4 +204,6 @@ class OrderServiceImplTest {
 //        then
         assertEquals(expectedOrderPrice, resultTotalPrice);
     }
+
+
 }
